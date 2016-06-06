@@ -35,7 +35,7 @@ defmodule Githooker.GithookControllerTest do
   end
 
   @tag loglevel: :info
-  test "All received GitHub events are logged", %{conn: conn} do
+  test "All received GitHub events are logged", %{conn: conn, loglevel: loglevel} do
 
     test_events = ~w(
       commit_comment create delete deployment deployment_status fork gollum 
@@ -45,7 +45,7 @@ defmodule Githooker.GithookControllerTest do
     )
 
     Enum.map(test_events, fn (test_event) ->
-      logs = capture_log([level: :info],fn ->
+      logs = capture_log([level: loglevel],fn ->
         conn
         |> put_req_header("x-github-event", test_event)
         |> post("/api/githook")
