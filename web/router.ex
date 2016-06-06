@@ -19,8 +19,9 @@ defmodule Githooker.Router do
     get "/", PageController, :index
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", Githooker do
-  #   pipe_through :api
-  # end
+  scope "/api", Githooker do
+     pipe_through :api
+
+     post "/githook", GithookController, :webhook
+  end
 end
