@@ -2,6 +2,18 @@ defmodule Githooker.GithookControllerTest do
   use Githooker.ConnCase
   import ExUnit.CaptureLog
 
+  setup context do
+    if context[:loglevel]  do
+      Logger.configure([level: context[:loglevel]])
+
+      on_exit fn ->
+        Logger.configure([level: :warn])
+      end
+    end
+
+    :ok
+  end
+
   test "Github deploy events are handled", %{conn: conn} do
     test_event = "deployment"
 
@@ -22,8 +34,8 @@ defmodule Githooker.GithookControllerTest do
     assert json_response(result, 400) == %{"status" => "Unknown event", "event" => test_event}
   end
 
+  @tag loglevel: :info
   test "All received GitHub events are logged", %{conn: conn} do
-    Logger.configure([level: :info])
 
     test_events = ~w(
       commit_comment create delete deployment deployment_status fork gollum 
@@ -41,13 +53,10 @@ defmodule Githooker.GithookControllerTest do
 
       assert logs =~ "Received GitHub event: #{test_event}"
     end)
-
-    Logger.configure([level: :warn])
   end
 
+  @tag loglevel: :info
   test "Deployment events are logged", %{conn: conn} do
-    Logger.configure([level: :info])
-
     test_event = "deployment"
 
     logs = capture_log([level: :info],fn ->
@@ -57,13 +66,10 @@ defmodule Githooker.GithookControllerTest do
     end)
 
     assert logs =~ "Handling deployment event"
-
-    Logger.configure([level: :warn])
   end
 
+  @tag loglevel: :info
   test "Unknown events are logged", %{conn: conn} do
-    Logger.configure([level: :info])
-
     test_event = "some unknown event"
 
     logs = capture_log([level: :info],fn ->
@@ -73,8 +79,5 @@ defmodule Githooker.GithookControllerTest do
     end)
 
     assert logs =~ "Ignoring unknown event: #{test_event}"
-
-    Logger.configure([level: :warn])
   end
-
 end
